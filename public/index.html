@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The €10 Deal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ══ TOKENS ══════════════════════════════════════════════════════════════════ */
+:root {
+  --ink:      #0a0a08;
+  --paper:    #f5f2eb;
+  --cream:    #ede9df;
+  --warm:     #d4cfc4;
+  --muted:    #8a8070;
+  --faint:    #b8b2a6;
+  --accent:   #c8401a;   /* vermillion */
+  --accept:   #2a6e3f;
+  --reject:   #c8401a;
+  --gold:     #9a7c2e;
+  --surface:  #fff;
+  --border:   rgba(10,10,8,.1);
+  --border2:  rgba(10,10,8,.18);
+  --r: 4px;
+  --font-head: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══ LAYOUT ═══════════════════════════════════════════════════════════════════ */
+#app {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 28px 16px 80px; min-height: 100vh;
+}
+.sheet {
+  width: 100%; max-width: 600px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  box-shadow: 0 2px 24px rgba(10,10,8,.07), 0 1px 3px rgba(10,10,8,.05);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.sheet-body { padding: 28px 32px; }
+.sheet.wide { max-width: 860px; }
+
+/* ══ MASTHEAD ══════════════════════════════════════════════════════════════ */
+.masthead {
+  background: var(--ink); color: var(--paper);
+  padding: 22px 32px 20px;
+  border-bottom: 3px solid var(--accent);
+}
+.mast-eyebrow { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+.mast-title   { font-family: var(--font-head); font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 900; line-height: 1.05; letter-spacing: -.02em; }
+.mast-sub     { font-size: .85rem; color: var(--warm); margin-top: 6px; font-weight: 300; }
+.mast-rule    { height: 1px; background: rgba(255,255,255,.1); margin: 14px 0 0; }
+
+/* ══ SECTION HEADER ════════════════════════════════════════════════════════ */
+.section-head {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 12px; border-bottom: 1.5px solid var(--border2); margin-bottom: 18px;
+}
+.section-num  { font-family: var(--font-mono); font-size: .7rem; color: var(--accent); font-weight: 500; }
+.section-name { font-family: var(--font-head); font-size: 1.05rem; font-weight: 700; }
+
+/* ══ TYPE ══════════════════════════════════════════════════════════════════ */
+h1 { font-family: var(--font-head); font-size: 1.6rem; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; }
+h2 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: 6px; }
+h3 { font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+p  { color: var(--muted); line-height: 1.75; }
+
+/* ══ INPUT ═════════════════════════════════════════════════════════════════ */
+input[type=text] {
+  width: 100%; padding: 12px 14px; font-size: 15px; font-family: var(--font-body);
+  background: var(--cream); border: 1.5px solid var(--border2); border-radius: var(--r);
+  color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s;
+}
+input[type=text]:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(10,10,8,.06); }
+
+/* ══ SLIDER ════════════════════════════════════════════════════════════════ */
+.slider-wrap { margin: 22px 0; }
+.slider-display {
+  text-align: center; margin-bottom: 18px;
+}
+.slider-amount {
+  font-family: var(--font-head); font-size: 3.8rem; font-weight: 900;
+  color: var(--ink); line-height: 1; letter-spacing: -.04em;
+  transition: color .2s;
+}
+.slider-amount span { font-size: 2rem; vertical-align: super; margin-right: 3px; color: var(--accent); }
+.slider-sub { font-size: .8rem; color: var(--muted); margin-top: 6px; font-family: var(--font-mono); }
+
+.split-bar {
+  display: flex; height: 10px; border-radius: 99px; overflow: hidden;
+  border: 1px solid var(--border2); margin-bottom: 8px;
+}
+.split-you  { background: var(--ink); transition: width .1s; }
+.split-them { background: var(--warm); flex: 1; }
+.split-labels { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); font-family: var(--font-mono); }
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px; background: var(--cream);
+  border-radius: 99px; outline: none; cursor: pointer;
+  border: 1px solid var(--border2);
+  margin: 16px 0 8px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--ink); cursor: pointer;
+  border: 3px solid var(--paper);
+  box-shadow: 0 2px 8px rgba(10,10,8,.25);
+  transition: transform .15s, box-shadow .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.15); box-shadow: 0 3px 12px rgba(10,10,8,.3);
+}
+
+/* ══ BUTTONS ══════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 22px; border-radius: var(--r); font-size: 14px; font-weight: 600;
+  font-family: var(--font-body); cursor: pointer; border: none; transition: all .13s;
+  letter-spacing: .02em; white-space: nowrap;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-ink   { background: var(--ink); color: var(--paper); }
+.btn-ink:hover:not(:disabled) { background: #1a1a16; }
+.btn-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--border2); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--ink); }
+.btn-full  { width: 100%; }
+.btn-lg    { padding: 15px 28px; font-size: 1rem; }
+.btn-accept { background: var(--accept); color: #fff; }
+.btn-accept:hover:not(:disabled) { filter: brightness(1.1); }
+.btn-reject { background: var(--reject); color: #fff; }
+.btn-reject:hover:not(:disabled) { filter: brightness(1.1); }
+
+/* ══ CHOICE CARDS ═════════════════════════════════════════════════════════ */
+.response-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.response-card {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 24px 16px; border-radius: var(--r); cursor: pointer;
+  border: 2px solid; transition: all .15s; text-align: center;
+}
+.response-card:hover:not(:disabled) { transform: translateY(-2px); }
+.response-card:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+.response-card .rc-icon  { font-size: 2rem; }
+.response-card .rc-label { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; }
+.response-card .rc-sub   { font-size: .78rem; color: inherit; opacity: .75; }
+.rc-accept { background: rgba(42,110,63,.07);  border-color: rgba(42,110,63,.35);  color: var(--accept); }
+.rc-reject { background: rgba(200,64,26,.07);  border-color: rgba(200,64,26,.35);  color: var(--reject); }
+
+/* ══ OFFER DISPLAY ═════════════════════════════════════════════════════════ */
+.offer-reveal {
+  text-align: center; padding: 32px 24px;
+  background: var(--cream); border: 1px solid var(--border2); border-radius: var(--r);
+  margin-bottom: 20px;
+}
+.offer-reveal .or-label { font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+.offer-reveal .or-amount { font-family: var(--font-head); font-size: 4rem; font-weight: 900; color: var(--accent); line-height: 1; letter-spacing: -.04em; }
+.offer-reveal .or-sub    { font-size: .82rem; color: var(--muted); margin-top: 8px; }
+
+/* ══ PROGRESS ═════════════════════════════════════════════════════════════ */
+.prog { margin-top: 18px; }
+.prog-row { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); font-family: var(--font-mono); margin-bottom: 5px; }
+.prog-track { height: 3px; background: var(--cream); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+.prog-fill  { height: 100%; background: var(--ink); border-radius: 99px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+
+/* ══ RESULT ════════════════════════════════════════════════════════════════ */
+.result-box {
+  padding: 20px 22px; border-radius: var(--r); text-align: center;
+  border: 2px solid; margin-bottom: 14px;
+}
+.result-box.accepted { background: rgba(42,110,63,.06); border-color: rgba(42,110,63,.3); }
+.result-box.rejected { background: rgba(200,64,26,.06); border-color: rgba(200,64,26,.3); }
+.result-box .rb-headline { font-family: var(--font-head); font-size: 1.4rem; font-weight: 900; margin-bottom: 4px; }
+.result-box .rb-sub      { font-size: .83rem; color: var(--muted); }
+.result-box.accepted .rb-headline { color: var(--accept); }
+.result-box.rejected .rb-headline { color: var(--reject); }
+
+.score-pair { display: flex; gap: 10px; margin-top: 12px; }
+.score-card {
+  flex: 1; padding: 14px 16px; background: var(--cream);
+  border: 1px solid var(--border2); border-radius: var(--r); text-align: center;
+}
+.score-card.me { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.score-card .sc-label { font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.score-card.me .sc-label { color: var(--warm); }
+.score-card .sc-score { font-family: var(--font-head); font-size: 2rem; font-weight: 900; line-height: 1.1; margin-top: 4px; }
+
+/* ══ HISTOGRAM ═════════════════════════════════════════════════════════════ */
+.histogram { margin-top: 6px; }
+.histo-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px; font-size: .82rem;
+}
+.histo-label { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); min-width: 32px; text-align: right; }
+.histo-bars  { flex: 1; display: flex; gap: 2px; height: 22px; align-items: center; }
+.histo-bar-accept {
+  background: var(--accept); height: 100%; border-radius: 2px 0 0 2px;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 4px; min-width: 0;
+}
+.histo-bar-reject {
+  background: var(--reject); height: 100%; border-radius: 0 2px 2px 0;
+  transition: width .5s cubic-bezier(.4,0,.2,1); min-width: 0;
+}
+.histo-count { font-family: var(--font-mono); font-size: .65rem; color: var(--muted); min-width: 20px; }
+.histo-legend { display: flex; gap: 16px; margin-bottom: 14px; font-size: .75rem; font-family: var(--font-mono); }
+.histo-dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+
+.stat-row { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.stat-box {
+  flex: 1; min-width: 90px; padding: 14px 16px;
+  background: var(--cream); border: 1px solid var(--border); border-radius: var(--r); text-align: center;
+}
+.stat-box .sb-num { font-family: var(--font-head); font-size: 1.8rem; font-weight: 900; line-height: 1; color: var(--ink); }
+.stat-box .sb-lab { font-family: var(--font-mono); font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-top: 3px; }
+.stat-box.accent .sb-num { color: var(--accent); }
+.stat-box.green  .sb-num { color: var(--accept); }
+
+/* ══ PLAYER LIST ══════════════════════════════════════════════════════════ */
+.byline-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.byline {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; background: var(--cream);
+  border: 1px solid var(--border); border-radius: 99px; font-size: .78rem;
+}
+.byline-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accept); }
+
+/* ══ FAC PANEL ════════════════════════════════════════════════════════════ */
+.fac-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.fac-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .82rem; }
+.fac-table th { background: var(--cream); padding: 7px 10px; text-align: left; font-family: var(--font-mono); font-size: .67rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); border-bottom: 1px solid var(--border2); }
+.fac-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.fac-table tr:last-child td { border-bottom: none; }
+
+/* ══ UTIL ═════════════════════════════════════════════════════════════════ */
+.divider { height: 1px; background: var(--border); margin: 18px 0; }
+.spacer  { height: 12px; }
+.center  { text-align: center; }
+.muted   { color: var(--muted); font-size: .83rem; }
+.mono    { font-family: var(--font-mono); }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: .72rem; font-weight: 600; font-family: var(--font-mono); }
+.b-accept { background: rgba(42,110,63,.12); color: var(--accept); }
+.b-reject { background: rgba(200,64,26,.12); color: var(--reject); }
+.b-pending{ background: var(--cream); color: var(--muted); border: 1px solid var(--border); }
+.b-round  { background: var(--ink); color: var(--paper); }
+
+.wait-msg { text-align: center; padding: 22px; color: var(--muted); font-size: .9rem; background: var(--cream); border-radius: var(--r); }
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.confirmed {
+  padding: 16px 20px; border-radius: var(--r); text-align: center;
+  background: var(--cream); border: 1.5px solid var(--border2);
+}
+.confirmed .cf-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+.confirmed .cf-sub   { font-size: .8rem; color: var(--muted); }
+
+.round-tag {
+  display: inline-block; padding: 4px 10px;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-mono); font-size: .68rem;
+  text-transform: uppercase; letter-spacing: .08em;
+  border-radius: 2px; margin-bottom: 14px;
+}
+
+@media (max-width: 480px) {
+  .response-grid { grid-template-columns: 1fr; }
+  .score-pair    { flex-direction: column; }
+  .sheet-body    { padding: 20px 18px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ══ STATE ══════════════════════════════════════════════════════════════════
+let ME = { pid: null, name: '', role: 'player' };
+let S  = null;
+let ES = null;
+
+// ══ API ════════════════════════════════════════════════════════════════════
+const post = (path, body) => fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json());
+const action  = (type, value) => post('/action',  { pid: ME.pid, type, value });
+const control = (cmd)         => post('/control', { pid: ME.pid, cmd });
+
+function connectSSE() {
+  if (ES) ES.close();
+  ES = new EventSource(`/events?pid=${ME.pid}`);
+  ES.onmessage = e => { S = JSON.parse(e.data); render(); };
+  ES.onerror   = () => setTimeout(() => ME.pid && connectSSE(), 2000);
+}
+
+// ══ DOM ════════════════════════════════════════════════════════════════════
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs||{})) {
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of kids.flat(9)) {
+    if (c == null) continue;
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return el;
+}
+const div  = (cls, ...kids) => h('div',  {class:cls}, ...kids);
+const span = (cls, ...kids) => h('span', {class:cls}, ...kids);
+function frag(...kids) {
+  const f = document.createDocumentFragment();
+  kids.flat(9).forEach(k => k && f.appendChild(k));
+  return f;
+}
+
+// ══ HELPERS ════════════════════════════════════════════════════════════════
+const pname = id => S?.players.find(p => p.id === id)?.name || '?';
+const pcount = () => S?.players.filter(p => p.role === 'player').length || 0;
+
+function progBar(count, total, label = '') {
+  const pct = total ? (count / total) * 100 : 0;
+  const wrap = div('prog');
+  wrap.appendChild(div('prog-row', [
+    h('span', {}, label || `${count} of ${total}`),
+    count >= total ? h('span', {style:'color:var(--accept);font-weight:600'}, '✓') : h('span', {})
+  ]));
+  const track = div('prog-track', [div('prog-fill')]);
+  track.querySelector('.prog-fill').style.width = pct + '%';
+  wrap.appendChild(track);
+  return wrap;
+}
+
+function badge(text, cls) { return h('span', {class:`badge ${cls}`}, text); }
+
+// ══ RENDER ════════════════════════════════════════════════════════════════
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  if (!ME.pid)  { app.appendChild(renderJoin()); return; }
+  if (!S)       { app.appendChild(waitSheet('Connecting…')); return; }
+  if (ME.role === 'facilitator') { app.appendChild(renderFac()); return; }
+
+  const map = { lobby: renderLobby, round1: renderGame, round2: renderGame, done: renderDone };
+  app.appendChild((map[S.phase] || renderLobby)());
+}
+
+// ══ JOIN ══════════════════════════════════════════════════════════════════
+function renderJoin() {
+  const code = new URLSearchParams(location.search).get('code') || '';
+  const sheet = div('sheet');
+  const mast  = div('masthead');
+  mast.innerHTML = `
+    <div class="mast-eyebrow">Game Theory · Live Session</div>
+    <div class="mast-title">The €10 Deal</div>
+    <div class="mast-sub">A live experiment in fairness, rationality, and social norms</div>
+    <div class="mast-rule"></div>
+  `;
+  const body = div('sheet-body');
+  body.appendChild(h('p', {style:'margin-bottom:16px;font-size:.88rem'}, 'Enter your name to join the session.'));
+  const inp = h('input', {type:'text', id:'nameIn', placeholder:'Your first name', style:'margin-bottom:12px',
+    onkeydown: e => e.key==='Enter' && doJoin(code)});
+  const btn = h('button', {class:'btn btn-ink btn-full btn-lg', onclick: () => doJoin(code)}, 'Join →');
+  body.appendChild(inp); body.appendChild(btn);
+  sheet.appendChild(mast); sheet.appendChild(body);
+  setTimeout(() => document.getElementById('nameIn')?.focus(), 50);
+  return sheet;
+}
+
+async function doJoin(code) {
+  const name = document.getElementById('nameIn')?.value?.trim();
+  if (!name) return;
+  const r = await post('/join', { name, code });
+  if (r.error) { alert(r.error); return; }
+  ME.pid = r.pid; ME.role = r.role; ME.name = name;
+  connectSSE();
+}
+
+// ══ LOBBY ═════════════════════════════════════════════════════════════════
+function renderLobby() {
+  const players = S.players.filter(p => p.role === 'player');
+  const sheet = div('sheet');
+  const mast  = div('masthead');
+  mast.innerHTML = `
+    <div class="mast-eyebrow">Lobby</div>
+    <div class="mast-title">Welcome, ${ME.name}</div>
+    <div class="mast-sub">Waiting for the session to begin</div>
+  `;
+  const body = div('sheet-body');
+  body.appendChild(h('h3', {}, `Participants (${players.length})`));
+  body.appendChild(div('byline-row', players.map(p =>
+    div('byline', [div('byline-dot'), p.name + (p.id === ME.pid ? ' (you)' : '')])
+  )));
+  body.appendChild(div('spacer'));
+  body.appendChild(div('wait-msg', [span('spin', '⟳'), '  Facilitator will start shortly…']));
+  sheet.appendChild(mast); sheet.appendChild(body);
+  return sheet;
+}
+
+// ══ GAME (round 1 & 2) ════════════════════════════════════════════════════
+function renderGame() {
+  const r   = S.round;
+  const sp  = S.subphase;
+  const f   = document.createDocumentFragment();
+  const sheet = div('sheet');
+  const mast  = div('masthead');
+  const roundLabel = S.phase === 'round1' ? 'Round 1 of 2 — You Propose' : 'Round 2 of 2 — You Respond';
+  const roleLabel  = r.isProposer ? 'You are the Proposer' : 'You are the Responder';
+  mast.innerHTML = `
+    <div class="mast-eyebrow">The €10 Deal · ${roundLabel}</div>
+    <div class="mast-title">Ultimatum Game</div>
+    <div class="mast-sub">${roleLabel}${r.partnerName ? ' · Partner: <strong style="color:var(--paper)">' + r.partnerName + '</strong>' : ''}</div>
+  `;
+  sheet.appendChild(mast);
+  const body = div('sheet-body');
+
+  // ── Proposer view ──────────────────────────────────────────────────────
+  if (r.isProposer) {
+    if (sp === 'proposing' && r.myOffer === null) {
+      body.appendChild(div('section-head', [
+        span('section-num', '01'),
+        h('span', {class:'section-name'}, 'Make your offer'),
+      ]));
+      body.appendChild(h('p', {style:'margin-bottom:4px;font-size:.85rem'}, `You have €10 to split with ${r.partnerName || 'your partner'}. Choose how much to offer them. They can accept — or reject, leaving you both with nothing.`));
+
+      // Slider
+      const sliderWrap = div('slider-wrap');
+      let val = 5;
+
+      const display   = div('slider-display');
+      const amountEl  = div('slider-amount', [h('span',{},'€'), String(val)]);
+      const subEl     = div('slider-sub', `You keep €${10 - val}`);
+      display.appendChild(amountEl); display.appendChild(subEl);
+
+      const splitBar  = div('split-bar', [div('split-you'), div('split-them')]);
+      const splitLabs = div('split-labels', [h('span',{},'Your offer'), h('span',{},'You keep')]);
+
+      const slider = h('input', {type:'range', min:'0', max:'10', value:'5',
+        oninput: function() {
+          val = parseInt(this.value);
+          amountEl.textContent = '';
+          amountEl.appendChild(h('span',{},'€'));
+          amountEl.appendChild(document.createTextNode(String(val)));
+          subEl.textContent = `You keep €${10 - val}`;
+          splitBar.querySelector('.split-you').style.width = (val * 10) + '%';
+          splitLabs.lastChild.textContent = `You keep €${10-val}`;
+          // Color feedback
+          amountEl.style.color = val < 3 ? 'var(--reject)' : val >= 5 ? 'var(--accept)' : 'var(--gold)';
+          confirmBtn.textContent = `Offer €${val} →`;
+        }
+      });
+
+      splitBar.querySelector('.split-you').style.width = '50%';
+      const confirmBtn = h('button', {class:'btn btn-ink btn-full', onclick: () => {
+        action('offer', val);
+      }}, 'Offer €5 →');
+
+      sliderWrap.appendChild(display);
+      sliderWrap.appendChild(splitBar);
+      sliderWrap.appendChild(splitLabs);
+      sliderWrap.appendChild(slider);
+      body.appendChild(sliderWrap);
+      body.appendChild(confirmBtn);
+
+    } else if (r.myOffer !== null && sp !== 'reveal') {
+      body.appendChild(div('confirmed', [
+        div('cf-title', `€${r.myOffer} offered`),
+        div('cf-sub', `You keep €${10 - r.myOffer} · Waiting for ${r.partnerName || 'partner'} to respond…`)
+      ]));
+    }
+    // Reveal for proposer
+    if (sp === 'reveal') { body.appendChild(renderReveal(r)); }
+    // Progress
+    if (sp !== 'reveal') body.appendChild(progBar(r.responseCount, r.proposerCount, `${r.responseCount} of ${r.proposerCount} responses in`));
+  }
+
+  // ── Responder view ─────────────────────────────────────────────────────
+  if (!r.isProposer) {
+    if (sp === 'proposing') {
+      body.appendChild(div('wait-msg', [span('spin', '⟳'), `  Waiting for ${r.partnerName || 'partner'} to make their offer…`]));
+      body.appendChild(progBar(r.offerCount, r.proposerCount, `${r.offerCount} of ${r.proposerCount} offers submitted`));
+    }
+    if (sp === 'responding' && r.myResponse === null && r.myOffer !== null) {
+      body.appendChild(div('offer-reveal', [
+        div('or-label', `${r.partnerName || 'Your partner'} offers you`),
+        div('or-amount', `€${r.myOffer}`),
+        div('or-sub', `They keep €${10 - r.myOffer}. Accept or reject — if you reject, neither of you gets anything.`),
+      ]));
+      body.appendChild(div('response-grid', [
+        h('button', {class:'response-card rc-accept', onclick: () => action('response','accept')}, [
+          span('rc-icon', '✓'),
+          span('rc-label', 'Accept'),
+          span('rc-sub', `You receive €${r.myOffer}`)
+        ]),
+        h('button', {class:'response-card rc-reject', onclick: () => action('response','reject')}, [
+          span('rc-icon', '✕'),
+          span('rc-label', 'Reject'),
+          span('rc-sub', 'Both get €0')
+        ]),
+      ]));
+    }
+    if (sp === 'responding' && r.myResponse !== null) {
+      body.appendChild(div('confirmed', [
+        div('cf-title', r.myResponse === 'accept' ? '✓ Accepted' : '✕ Rejected'),
+        div('cf-sub', 'Waiting for others to respond…')
+      ]));
+      body.appendChild(progBar(r.responseCount, r.proposerCount));
+    }
+    if (sp === 'responding' && r.myOffer === null) {
+      body.appendChild(div('wait-msg', [span('spin', '⟳'), '  Your offer is on its way…']));
+    }
+    if (sp === 'all_responded') {
+      body.appendChild(div('confirmed', [
+        div('cf-title', '✓ All responses in'),
+        div('cf-sub', 'Waiting for facilitator to reveal results…')
+      ]));
+    }
+    if (sp === 'reveal') { body.appendChild(renderReveal(r)); }
+  }
+
+  sheet.appendChild(body);
+  f.appendChild(sheet);
+
+  // Group stats sheet (only on reveal)
+  if (sp === 'reveal' && S.groupStats) { f.appendChild(renderHistogram()); }
+  return f;
+}
+
+// ── Pair outcome ───────────────────────────────────────────────────────────
+function renderReveal(r) {
+  if (!r.outcome) return div('wait-msg', [span('spin','⟳'), ' Loading results…']);
+  const { offer, accepted, myScore, theirScore } = r.outcome;
+  const wrap = div('');
+
+  wrap.appendChild(div(`result-box ${accepted ? 'accepted' : 'rejected'}`, [
+    div('rb-headline', accepted ? `✓ Accepted — €${offer} offered` : `✕ Rejected — €${offer} refused`),
+    div('rb-sub', accepted
+      ? `Both players receive their share.`
+      : `Neither player receives anything. Rational? No. Human? Yes.`
+    ),
+  ]));
+
+  wrap.appendChild(div('score-pair', [
+    div(`score-card me`, [
+      div('sc-label', 'You'),
+      div('sc-score', `€${myScore}`),
+    ]),
+    div('score-card', [
+      div('sc-label', r.partnerName || 'Partner'),
+      div('sc-score', `€${theirScore}`),
+    ]),
+  ]));
+  return wrap;
+}
+
+// ── Group histogram ────────────────────────────────────────────────────────
+function renderHistogram() {
+  const gs = S.groupStats;
+  if (!gs) return h('span', {});
+  const sheet = div('sheet');
+  const body  = div('sheet-body');
+
+  body.appendChild(h('h3', {}, 'Group results'));
+  body.appendChild(div('stat-row', [
+    div('stat-box', [
+      div('sb-num', gs.avgOffer !== null ? `€${gs.avgOffer}` : '—'),
+      div('sb-lab', 'Avg. offer'),
+    ]),
+    div('stat-box green', [
+      div('sb-num', String(gs.accepted)),
+      div('sb-lab', 'Accepted'),
+    ]),
+    div('stat-box accent', [
+      div('sb-num', String(gs.rejected)),
+      div('sb-lab', 'Rejected'),
+    ]),
+    div('stat-box', [
+      div('sb-num', `${gs.totalPairs ? Math.round(gs.rejected / gs.totalPairs * 100) : 0}%`),
+      div('sb-lab', 'Rejection rate'),
+    ]),
+  ]));
+
+  body.appendChild(div('histo-legend', [
+    h('span', {}, [
+      div('histo-dot', []), // inline style
+      ' Accepted'
+    ]),
+    h('span', {}, ' Rejected'),
+  ]));
+  // Fix legend dots
+  const dots = body.querySelectorAll('.histo-dot');
+  if (dots[0]) dots[0].style.background = 'var(--accept)';
+
+  const maxCount = Math.max(...gs.buckets.map(b => b.count), 1);
+  const histo = div('histogram');
+
+  gs.buckets.forEach(b => {
+    const row      = div('histo-row');
+    const labelEl  = div('histo-label', `€${b.value}`);
+    const barsWrap = div('histo-bars');
+    const pctA = (b.accepted / maxCount) * 100;
+    const pctR = (b.rejected / maxCount) * 100;
+
+    if (b.accepted > 0) {
+      const ba = div('histo-bar-accept');
+      ba.style.width = pctA + '%';
+      barsWrap.appendChild(ba);
+    }
+    if (b.rejected > 0) {
+      const br = div('histo-bar-reject');
+      br.style.width = pctR + '%';
+      barsWrap.appendChild(br);
+    }
+    if (b.accepted === 0 && b.rejected === 0) {
+      const empty = div('');
+      empty.style.cssText = 'height:3px;width:3px;background:var(--warm);border-radius:50%;';
+      barsWrap.appendChild(empty);
+    }
+
+    const countEl = div('histo-count', `${b.count}`);
+    row.appendChild(labelEl); row.appendChild(barsWrap); row.appendChild(countEl);
+    histo.appendChild(row);
+  });
+
+  body.appendChild(histo);
+
+  // Debrief note
+  const hasRejection = gs.rejected > 0;
+  const note = div('', [
+    div('divider'),
+    h('p', {style:'font-size:.8rem;color:var(--muted);line-height:1.8'}, [
+      h('strong', {style:'color:var(--ink)'}, 'Debrief: '),
+      hasRejection
+        ? `${gs.rejected} offer${gs.rejected>1?'s were':' was'} rejected. Standard economic theory predicts all positive offers are accepted — the data disagrees. What drove the rejections?`
+        : `All offers were accepted. Was this rationality, social norms, or fear? Compare your offer to the group average of €${gs.avgOffer}.`
+    ])
+  ]);
+  body.appendChild(note);
+  sheet.appendChild(body);
+  return sheet;
+}
+
+// ══ DONE ══════════════════════════════════════════════════════════════════
+function renderDone() {
+  const sheet = div('sheet');
+  const mast  = div('masthead', []);
+  mast.innerHTML = `
+    <div class="mast-eyebrow">Session complete</div>
+    <div class="mast-title">The €10 Deal</div>
+    <div class="mast-sub">Thanks for playing</div>
+  `;
+  const body = div('sheet-body center');
+  body.appendChild(h('p', {style:'margin-top:8px'}, 'The debrief starts now.'));
+  if (S.summary) {
+    body.appendChild(div('spacer'));
+    body.appendChild(div('confirmed', [
+      div('cf-title', `Your total across both rounds: €${S.summary.myTotal}`),
+      div('cf-sub', 'Combined score from proposing and responding')
+    ]));
+  }
+  sheet.appendChild(mast); sheet.appendChild(body);
+  return sheet;
+}
+
+// ══ FACILITATOR ═══════════════════════════════════════════════════════════
+function renderFac() {
+  const ph   = S.phase;
+  const sp   = S.subphase;
+  const total = pcount();
+  const r    = S.round;
+
+  const f = document.createDocumentFragment();
+  const sheet = div('sheet wide');
+  const mast  = div('masthead');
+  mast.innerHTML = `
+    <div class="mast-eyebrow">Facilitator Dashboard</div>
+    <div class="mast-title">The €10 Deal</div>
+    <div class="mast-sub">${total} players · ${ph} · ${sp}</div>
+  `;
+  const body = div('sheet-body');
+
+  // Controls
+  body.appendChild(h('h3', {}, 'Controls'));
+  const ctrl = div('fac-controls');
+
+  const btn = (label, cls, cmd, disabled=false) => {
+    const b = h('button', {class:`btn ${cls}`, onclick: () => control(cmd)}, label);
+    if (disabled) b.setAttribute('disabled','');
+    return b;
+  };
+
+  if (ph === 'lobby') ctrl.appendChild(btn(`▶ Start Round 1 (${total} players)`, 'btn-ink', 'start_round1', total < 2));
+  if (ph === 'round1' && (sp === 'proposing' || sp === 'responding' || sp === 'all_responded'))
+    ctrl.appendChild(btn(`Reveal Round 1 (${r.responseCount}/${r.proposerCount} responded)`, 'btn-ink', 'reveal_round1'));
+  if (ph === 'round1' && sp === 'reveal')
+    ctrl.appendChild(btn('▶ Start Round 2', 'btn-ink', 'start_round2'));
+  if (ph === 'round2' && (sp === 'proposing' || sp === 'responding' || sp === 'all_responded'))
+    ctrl.appendChild(btn(`Reveal Round 2 (${r.responseCount}/${r.proposerCount} responded)`, 'btn-ink', 'reveal_round2'));
+  if (ph === 'round2' && sp === 'reveal')
+    ctrl.appendChild(btn('✅ End session', 'btn-ink', 'done'));
+
+  body.appendChild(ctrl);
+  body.appendChild(div('divider'));
+
+  // Players
+  body.appendChild(h('h3', {}, `Players (${total})`));
+  body.appendChild(div('byline-row',
+    S.players.filter(p=>p.role==='player').map(p => div('byline', [div('byline-dot'), p.name]))
+  ));
+
+  // Round live table
+  if ((ph === 'round1' || ph === 'round2') && r) {
+    body.appendChild(div('divider'));
+    body.appendChild(h('h3', {}, `Round ${r.num} — live`));
+
+    // Stats
+    body.appendChild(div('stat-row', [
+      div('stat-box', [div('sb-num', String(r.offerCount)), div('sb-lab', 'Offers in')]),
+      div('stat-box', [div('sb-num', String(r.responseCount)), div('sb-lab', 'Responses in')]),
+    ]));
+
+    // Pair table
+    if (S.groupStats && sp === 'reveal') {
+      body.appendChild(h('h3', {style:'margin-top:16px'}, 'Group stats'));
+      body.appendChild(div('stat-row', [
+        div('stat-box', [div('sb-num', `€${S.groupStats.avgOffer ?? '—'}`), div('sb-lab', 'Avg offer')]),
+        div('stat-box green', [div('sb-num', String(S.groupStats.accepted)), div('sb-lab', 'Accepted')]),
+        div('stat-box accent', [div('sb-num', String(S.groupStats.rejected)), div('sb-lab', 'Rejected')]),
+      ]));
+    }
+  }
+
+  sheet.appendChild(mast); sheet.appendChild(body);
+  f.appendChild(sheet);
+  return f;
+}
+
+// ══ UTILS ═════════════════════════════════════════════════════════════════
+function waitSheet(msg) {
+  const sheet = div('sheet');
+  const body  = div('sheet-body');
+  body.appendChild(div('wait-msg', [span('spin','⟳'), `  ${msg}`]));
+  sheet.appendChild(body);
+  return sheet;
+}
+
+// ══ BOOT ══════════════════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>
